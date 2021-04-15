@@ -1,86 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chat</title>
+    <meta charset="UTF-8">
+    <title>Chat</title>
 </head>
 
 <script>
-  var socket = null;
-  var isConn = false;
+    var socket = null;
+    var isConn = false;
 
-  socket = new WebSocket('ws://113.54.202.29:9001');
-  socket.onerror = function (err) {
-    console.log(err);
-    addError('连接错误')
-  };
-  socket.onopen = function () {
-    isConn = true;
-    addMessage('连接成功');
-    console.log('open');
-  };
-  socket.onmessage = function (event) {
-    console.log(event.data);
-    addMessage(event.data);
-  };
-  socket.onclose = function () {
-    console.log('close')
-  };
+    socket = new WebSocket('ws://127.0.0.1:9001');
+    socket.onerror = function (err) {
+        console.log(err);
+        addError('连接错误')
+    };
+    socket.onopen = function () {
+        isConn = true;
+        addMessage('连接成功');
+        console.log('open');
+    };
+    socket.onmessage = function (event) {
+        console.log(event.data);
+        addMessage(event.data);
+    };
+    socket.onclose = function () {
+        console.log('close')
+    };
 
 
-  function sendMessage() {
-    var sendText = document.getElementById('input_text').value;
-    if (!isConn) {
-      addError('发送失败');
-    } else {
-      if (!sendText) {
-        addError('不要发送空消息');
-      } else {
-        addMessage('<label style="font-style: oblique">' + '[我]' + sendText + '</label>');
-        socket.send(sendText);
-      }
+    function sendMessage() {
+        var sendText = document.getElementById('input_text');
+        if (!isConn) {
+            addError('发送失败');
+        } else {
+            if (!sendText.value) {
+                addError('不要发送空消息');
+            } else {
+                addMessage('<label style="font-style: oblique">' + '[我]' + sendText.value + '</label>');
+                socket.send(sendText.value);
+                sendText.value = '';
+            }
+        }
     }
-  }
 
-  function addMessage(message) {
-    var textShow = document.getElementById('show-message');
-    textShow.innerHTML += message + '<br>'
-  }
+    function addMessage(message) {
+        const date = new Date();
+        const time = date.getHours().toString()+':'+date.getMinutes().toString()
+        var textShow = document.getElementById('show-message');
+        textShow.innerHTML += time + '<br>' + message + '<br><br>';
+      //让滚动条保持在最底部
+        textShow.scrollTop = textShow.scrollHeight;
+    }
 
-  function addError(error) {
-    var textShow = document.getElementById('show-message');
-    textShow.innerHTML += '<label style="color: red">[Error] ' + error + '</label><br>'
-  }
+    function addError(error) {
+        var textShow = document.getElementById('show-message');
+        textShow.innerHTML += '<label style="color: red">[Error] ' + error + '</label><br>'
+    }
+
+    function enterKey(event) {
+      //按下回车键就发送消息
+        if (event.keyCode === 13) {
+            sendMessage()
+        }
+    }
 </script>
 <style>
-  button {
-    border-radius: 5px;
-    padding: 8px;
-    color: white;
-    border: none;
-  }
+    button {
+        border-radius: 5px;
+        padding: 8px;
+        color: white;
+        border: none;
+    }
 
-  input {
-    border-radius: 4px;
-    width: 300px;
-    padding: 6px;
-    border: 1px solid dodgerblue;
-  }
+    input {
+        border-radius: 4px;
+        width: 300px;
+        padding: 6px;
+        border: 1px solid dodgerblue;
+    }
 
-  #show-message {
-    border-radius: 4px;
-    height: 320px;
-    width: 480px;
-    border: 1px double darkgray;
-    padding: 8px;
-  }
+    #show-message {
+        border-radius: 4px;
+        height: 320px;
+        width: 480px;
+        border: 1px double darkgray;
+        padding: 8px;
+    }
 </style>
 <body>
-<div id="show-message">
+<div id="show-message" style="overflow-y:auto">
 </div>
+
 <div style="margin-top: 20px">
-  <input id="input_text" type="text" placeholder="message">
-  <button onclick="sendMessage()" style="background-color: dodgerblue">Send</button>
+    <input id="input_text" type="text" placeholder="message" onkeydown="enterKey(event)">
+    <button onclick="sendMessage()" style="background-color: dodgerblue">Send</button>
 </div>
 </body>
 </html>
